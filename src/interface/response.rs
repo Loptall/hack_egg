@@ -3,9 +3,9 @@ use geojson::GeoJson;
 // list of object used in responced json
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct Tweets(Vec<Tweet>);
+// #[derive(Debug, Serialize, Deserialize)]
+// #[serde(transparent)]
+// pub struct Tweets(Vec<Tweet>);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Tweet {
@@ -19,8 +19,8 @@ pub struct Tweet {
     attachments: Option<Attachment>,
     geo: Option<Geo>,
     context_annotations: Option<Vec<ContextAnnotation>>,
-    entities: Option<Entities>,
-    withheld: Option<Withheld>,
+    entities: Option<TweetEntities>,
+    withheld: Option<TweetWithheld>,
     public_metrics: Option<TweetPublicMetrics>,
     non_public_metrics: Option<TweetNonPublicMetrics>,
     organic_metrics: Option<TweetOrganicMetrics>,
@@ -92,9 +92,9 @@ pub struct Entity {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Entities {
+pub struct TweetEntities {
     annotaions: Option<Vec<Annotation>>,
-    urls: Option<Vec<Url>>,
+    urls: Option<Vec<TweetUrl>>,
     hashtags: Option<Vec<Hashtag>>,
     mentions: Option<Vec<Mention>>,
     cashtags: Option<Vec<Cashtag>>,
@@ -111,7 +111,7 @@ pub struct Annotation {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Url {
+pub struct TweetUrl {
     start: Option<i32>,
     end: Option<i32>,
     url: Option<String>,
@@ -142,7 +142,7 @@ pub struct Cashtag {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Withheld {
+pub struct TweetWithheld {
     copyright: Option<bool>,
     country_codes: Option<Vec<String>>,
     scope: Option<Scope>,
@@ -189,6 +189,10 @@ pub struct TweetPromotedMetrics {
     like_count: Option<i32>,
 }
 
+// #[derive(Debug, Serialize, Deserialize)]
+// #[serde(transparent)]
+// pub struct Users(Vec<User>);
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     id: String,
@@ -198,10 +202,57 @@ pub struct User {
     description: Option<String>,
     // entities: Option<>
     location: Option<String>,
+    url: Option<String>,
+    entities: Option<UserEntities>,
+    public_metrics: Option<UserPublicMetrics>,
     pinned_tweet_id: Option<String>,
     profile_image_url: Option<String>,
     protected: Option<bool>,
     verified: Option<bool>,
+    withheld: Option<UserWithheld>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserWithheld {
+    country_codes: Option<Vec<String>>,
+    scope: Option<Scope>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserEntities {
+    // WIP
+    url: Option<Vec<UserUrls>>,
+    description: Option<Vec<Description>>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserUrls {
+    urls: Vec<UserUrl>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserUrl {
+    start: Option<i32>,
+    end: Option<i32>,
+    url: Option<String>,
+    expanded_url: Option<String>,
+    display_url: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Description {
+    urls: Option<Vec<UserUrl>>,
+    hashtags: Option<Vec<Hashtag>>,
+    mentions: Option<Vec<Mention>>,
+    cashtags: Option<Vec<Cashtag>>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserPublicMetrics {
+    followers_count: Option<i32>,
+    following_count: Option<i32>,
+    tweet_count: Option<i32>,
+    listed_count: Option<i32>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -279,7 +330,6 @@ pub struct Place {
 }
 
 mod test {
-
     #[test]
     fn parse_tweet() {
         use super::{Includes, Tweet};
@@ -296,15 +346,45 @@ mod test {
     }
     #[test]
     fn parse_tweets() {
-        use super::{Includes, Tweets};
+        use super::{Includes, Tweet};
         use serde::{Deserialize, Serialize};
         #[derive(Debug, Serialize, Deserialize)]
         struct Responce {
-            data: Tweets,
+            data: Vec<Tweet>,
             includes: Includes,
         }
         let tweets: Responce =
             serde_json::from_str(include_str!("../../asset/example_payload/tweets.json"))
+                .expect("failed to desirialize json file");
+        dbg!("{}", tweets);
+    }
+
+    #[test]
+    fn parse_user() {
+        use super::{Includes, User};
+        use serde::{Deserialize, Serialize};
+        #[derive(Debug, Serialize, Deserialize)]
+        struct Responce {
+            data: User,
+            includes: Includes,
+        }
+        let tweets: Responce =
+            serde_json::from_str(include_str!("../../asset/example_payload/user.json"))
+                .expect("failed to desirialize json file");
+        dbg!("{}", tweets);
+    }
+
+    #[test]
+    fn parse_users() {
+        use super::{Includes, User};
+        use serde::{Deserialize, Serialize};
+        #[derive(Debug, Serialize, Deserialize)]
+        struct Responce {
+            data: Vec<User>,
+            includes: Includes,
+        }
+        let tweets: Responce =
+            serde_json::from_str(include_str!("../../asset/example_payload/users.json"))
                 .expect("failed to desirialize json file");
         dbg!("{}", tweets);
     }

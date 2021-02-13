@@ -1,2 +1,2 @@
-pub mod responce;
-pub mod query;
+pub mod params;
+pub mod response;
